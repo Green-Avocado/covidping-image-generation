@@ -64,15 +64,18 @@ function generateHTML(stateName, tables) {
     `;
 }
 
-app.get('/test', (req, res) => {
-    bucket.file('test').download().then(function(data) {
+app.get('/image/**', (req, res) => {
+    bucket.file(req.path.split('/')[2]).download().then(function(data) {
+        console.log(req.path.split('/')[2])
         res.contentType('image/png');
-        res.send(data[0]);
+        res.status(200).send(data[0]);
     });
 });
 
-app.get('/**', (req, res) => {
+app.get('/update/**', (req, res) => {
     var image;
+    console.log(req.path.split('/')[2])
+    console.log(req.body);
 
     (async () => {
     const browser = await puppeteer.launch({args: ['--no-sandbox']})
@@ -81,16 +84,10 @@ app.get('/**', (req, res) => {
     image = await page.screenshot()
     await browser.close()
     })().then(function() {
-        let options = {
-            destination: "example.png",
-            metadata: {
-                contentType: 'image/png'
-            }
-        };
-        saveImage("test", image);
+        saveImage(req.path.split('/')[2], image);
         res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
         res.contentType('image/png');
-        res.send(image);
+        res.status(200).send(image);
     });
 });
 
