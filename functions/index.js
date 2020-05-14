@@ -72,7 +72,7 @@ app.get('/image/**', (req, res) => {
     });
 });
 
-app.get('/update/**', (req, res) => {
+app.post('/update/**', (req, res) => {
     var image;
     console.log(req.path.split('/')[2])
     console.log(req.body);
@@ -80,16 +80,21 @@ app.get('/update/**', (req, res) => {
     (async () => {
     const browser = await puppeteer.launch({args: ['--no-sandbox']})
     const page = await browser.newPage()
-    await page.setContent(generateHTML('a','b'))
+    await page.setContent(generateHTML(req.path.split('/')[2],req.body.table))
     image = await page.screenshot()
     await browser.close()
     })().then(function() {
         saveImage(req.path.split('/')[2], image);
-        res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
         res.contentType('image/png');
         res.status(200).send(image);
     });
 });
 
-exports.app = functions.https.onRequest(app);
+const runtimeOpts = {
+    timeoutSeconds: 300,
+    memory: '1GB'
+}
 
+exports.app = functions
+    .runWith(runtimeOpts)
+    .https.onRequest(app);
