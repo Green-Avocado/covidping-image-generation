@@ -39,14 +39,15 @@ function generateHTML(stateName, tables) {
 
 app.get('/**', (req, res) => {
     var image;
+
     (async () => {
-    const browser = await puppeteer.launch()
+    const browser = await puppeteer.launch({args: ['--no-sandbox']})
     const page = await browser.newPage()
     await page.setContent(generateHTML('a','b'))
     image = await page.screenshot()
     await browser.close()
     })().then(function() {
-        res.contentType('image/jpeg');
+        res.contentType('image/png');
         res.send(image);
     });
 });
