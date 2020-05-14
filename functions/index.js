@@ -78,7 +78,10 @@ app.post('/update/**', (req, res) => {
     console.log(req.body);
 
     (async () => {
-    const browser = await puppeteer.launch({args: ['--no-sandbox']})
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox'],
+        defaultViewport: {width: 876, height: 438}
+    });
     const page = await browser.newPage()
     await page.setContent(generateHTML(req.path.split('/')[2],req.body.table))
     image = await page.screenshot()
