@@ -47,6 +47,7 @@ app.get('/**', (req, res) => {
     image = await page.screenshot()
     await browser.close()
     })().then(function() {
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
         res.contentType('image/png');
         res.send(image);
     });
