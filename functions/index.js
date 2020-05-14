@@ -1,7 +1,34 @@
 const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 const express = require('express');
 const puppeteer = require('puppeteer');
 const app = express();
+
+var serviceAccount = require("./covidpingimages-firebase-adminsdk-21n0z-8de58fc623.json");
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://covidpingimages.firebaseio.com",
+    storageBucket: "covidpingimages.appspot.com"
+});
+
+const bucket = admin.storage().bucket();
+
+function saveImage(filename, data) {
+    const imageBuffer = new Uint8Array(data);
+    const file = bucket.file(filename, {
+        uploadType: {resumable: false}
+    });
+
+    file.save(imageBuffer, (err) => {
+        if (err) {
+            console.error(`Error uploading: ${filename} with message: ${err.message}`);
+            return;
+        }
+
+        console.log('Uploaded file');
+    });
+}
 
 function generateHTML(stateName, tables) {
     return `
@@ -37,6 +64,13 @@ function generateHTML(stateName, tables) {
     `;
 }
 
+app.get('/test', (req, res) => {
+    bucket.file('test').download().then(function(data) {
+        res.contentType('image/png');
+        res.send(data[0]);
+    });
+});
+
 app.get('/**', (req, res) => {
     var image;
 
@@ -47,6 +81,13 @@ app.get('/**', (req, res) => {
     image = await page.screenshot()
     await browser.close()
     })().then(function() {
+        let options = {
+            destination: "example.png",
+            metadata: {
+                contentType: 'image/png'
+            }
+        };
+        saveImage("test", image);
         res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
         res.contentType('image/png');
         res.send(image);
