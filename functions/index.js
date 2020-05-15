@@ -51,6 +51,7 @@ function generateHTML(stateName, tables) {
 
         </head>
         <body>
+        <div style="padding-left:44px;width:600px;">
         <div> <font size="5" style="font-size:small;font-family: Arial;">
         <p>These are ` + stateName + `'s officially reported numbers for the 24-hour period ending at 5:30pm EST today:<p>
         </font> </div>
@@ -59,6 +60,7 @@ function generateHTML(stateName, tables) {
 
         <div> <font size="5" style="font-size:small;font-family: Arial;">
         <p><i>Special thanks to The COVID Tracking Project and ` + stateName + ` state health authorities for supplying our data.</i><br>
+        </div>
         </body>
         </html>
     `;
@@ -80,16 +82,16 @@ app.post('/update/**', (req, res) => {
     (async () => {
     const browser = await puppeteer.launch({
         args: ['--no-sandbox'],
-        defaultViewport: {width: 876, height: 438}
+        defaultViewport: {width: 688, height: 360}
     });
     const page = await browser.newPage()
     await page.setContent(generateHTML(req.path.split('/')[2],req.body.table))
-    image = await page.screenshot()
+    image = await page.screenshot({fullPage: true})
     await browser.close()
     })().then(function() {
         saveImage(req.path.split('/')[2], image);
         res.contentType('image/png');
-        res.status(200).send(image);
+        res.status(200).send(generateHTML(req.path.split('/')[2],req.body.table));
     });
 });
 
