@@ -1,4 +1,4 @@
-# covidping-image-generation
+# covidping-image-generation (discontinued)
 
 Firebase Cloud Function project to generate, store, and serve images from Covid-19 statistics. Created for use by https://www.covidping.com.
 
